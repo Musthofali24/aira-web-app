@@ -10,7 +10,7 @@ function FloatingNavbar() {
     "flex flex-col items-center space-y-1.5 p-4 rounded-full transition-colors duration-200";
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white text-gray-700 rounded-full shadow-2xl border border-[#45cad7] px-5 py-2 flex justify-between items-center md:gap-3 z-50">
+    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white text-gray-700 rounded-full shadow-2xl border border-[#45cad7] px-2 py-2 flex justify-between items-center md:gap-3 z-50">
       <NavLink
         to="/"
         className={`${baseClass} ${
