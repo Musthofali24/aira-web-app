@@ -1,189 +1,103 @@
-import { useEffect, useState } from "react";
-import { db } from "./firebase/config";
-import { ref, onValue } from "firebase/database";
-import GaugeComponent from "react-gauge-component";
+import "remixicon/fonts/remixicon.css";
+import StatusCard from "./components/StatusCard";
 
 function App() {
-  const [data, setData] = useState(null);
-  const [time, setTime] = useState(new Date());
-
-  // Update waktu setiap detik
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const sensorRef = ref(db, "sensor");
-    const unsubscribe = onValue(sensorRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setData(snapshot.val());
-      } else {
-        setData(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const getStatusLabel = (type, value) => {
-    if (type === "temperature") {
-      if (value < 30) return { text: "Dingin ❄️", color: "text-blue-400" };
-      if (value < 60) return { text: "Normal 🌤️", color: "text-yellow-400" };
-      return { text: "Panas 🔥", color: "text-red-500" };
-    }
-    if (type === "humidity") {
-      if (value < 30) return { text: "Kering 🌵", color: "text-red-400" };
-      if (value < 70) return { text: "Lembab 😌", color: "text-yellow-400" };
-      return { text: "Basah 💧", color: "text-green-400" };
-    }
-    if (type === "airQuality") {
-      if (value < 300) return { text: "Baik 🌱", color: "text-green-400" };
-      if (value < 600) return { text: "Sedang 🌥️", color: "text-yellow-400" };
-      return { text: "Buruk ☠️", color: "text-red-500" };
-    }
-    return { text: "Tidak diketahui", color: "text-white" };
-  };
-
-  const renderStatusCard = (title, value, unit, status) => (
-    <div className="bg-gray-800 p-4 rounded-2xl shadow-lg text-center">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-3xl font-bold">
-        {value} {unit}
-      </p>
-      <p className={`mt-1 font-semibold ${status.color}`}>{status.text}</p>
-    </div>
-  );
-
-  // Format jam & tanggal
-  const formatDateTime = (date) => {
-    return `${date.toLocaleDateString("id-ID", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })} – ${date.toLocaleTimeString("id-ID")}`;
+  const sensorData = {
+    temperature: {
+      value: 29,
+      unit: "°C",
+      status: { text: "Normal", color: "text-green-600" },
+    },
+    humidity: {
+      value: 67,
+      unit: "%",
+      status: { text: "Tinggi", color: "text-yellow-600" },
+    },
+    gas: {
+      value: 210,
+      unit: "ppm",
+      status: { text: "Buruk", color: "text-red-600" },
+    },
   };
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 font-sans bg-gray-900 text-white min-h-screen">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-center">
-        Monitoring Sensor AIRA 💧
-      </h1>
-
-      {/* Status & waktu */}
-      <div className="text-center mt-2 mb-8">
-        <p
-          className={`font-semibold ${
-            data ? "text-green-400" : "text-red-400"
-          }`}
-        >
-          {data ? "✅ Connected" : "❌ Disconnected"}
-        </p>
-        <p className="text-sm text-gray-400 mt-1">📅 {formatDateTime(time)}</p>
+    <div className="bg-gradient-to-b bg-[#45cad7] text-white min-h-screen py-5">
+      <div className="max-w-4xl mx-auto flex justify-between items-center mb-5">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
+            <i class="ri-leaf-line ri-lg"></i>
+          </div>
+          <div className="">
+            <h1 className="font-semibold text-xl tracking-widest">AIRA</h1>
+            <p className="text-base text-gray-200">Smart Plant Monitoring</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <a href="#" className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
+            <i class="ri-moon-line ri-lg"></i>
+          </a>
+          <a href="#" className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
+            <i class="ri-settings-3-line ri-lg"></i>
+          </a>
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl p-6 shadow-lg">
+        {/* Tambah Card Status */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatusCard
+            title="Suhu"
+            value={sensorData.temperature.value}
+            unit={sensorData.temperature.unit}
+            status={sensorData.temperature.status}
+            icon="ri-thermometer-line"
+            iconBg="bg-red-100 text-red-500"
+          />
+          <StatusCard
+            title="Kelembaban"
+            value={sensorData.humidity.value}
+            unit={sensorData.humidity.unit}
+            status={sensorData.humidity.status}
+            icon="ri-drop-line"
+            iconBg="bg-blue-100 text-blue-500"
+          />
+          <StatusCard
+            title="Kualitas Udara"
+            value={sensorData.gas.value}
+            unit={sensorData.gas.unit}
+            status={sensorData.gas.status}
+            icon="ri-windy-line"
+            iconBg="bg-green-100 text-green-500"
+          />
+        </div>
       </div>
 
-      {data ? (
-        <>
-          {/* Row: Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-screen-xl mx-auto mb-5">
-            {renderStatusCard(
-              "Status Suhu",
-              data.temperature,
-              "°C",
-              getStatusLabel("temperature", data.temperature)
-            )}
-            {renderStatusCard(
-              "Status Kelembaban",
-              data.humidity,
-              "%",
-              getStatusLabel("humidity", data.humidity)
-            )}
-            {renderStatusCard(
-              "Status Udara",
-              data.airQuality,
-              "",
-              getStatusLabel("airQuality", data.airQuality)
-            )}
-          </div>
-
-          {/* Row: Gauges */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-screen-xl mx-auto mb-10">
-            {/* Suhu */}
-            <div className="bg-gray-800 p-4 rounded-2xl shadow-lg">
-              <h2 className="text-lg font-semibold mb-2">Suhu</h2>
-              <GaugeComponent
-                value={data.temperature}
-                minValue={0}
-                maxValue={100}
-                arc={{
-                  subArcs: [
-                    { limit: 30, color: "#5BE12C" },
-                    { limit: 60, color: "#F5CD19" },
-                    { limit: 100, color: "#EA4228" },
-                  ],
-                }}
-                pointer={{ type: "arrow", elastic: true }}
-                labels={{
-                  valueLabel: {
-                    formatTextValue: (value) => `${value} °C`,
-                  },
-                }}
-              />
-            </div>
-
-            {/* Kelembaban */}
-            <div className="bg-gray-800 p-4 rounded-2xl shadow-lg">
-              <h2 className="text-lg font-semibold mb-2">Kelembaban</h2>
-              <GaugeComponent
-                value={data.humidity}
-                minValue={0}
-                maxValue={100}
-                arc={{
-                  subArcs: [
-                    { limit: 30, color: "#EA4228" },
-                    { limit: 70, color: "#F5CD19" },
-                    { limit: 100, color: "#5BE12C" },
-                  ],
-                }}
-                pointer={{ type: "needle", color: "#fff" }}
-                labels={{
-                  valueLabel: {
-                    formatTextValue: (value) => `${value} %`,
-                  },
-                }}
-              />
-            </div>
-
-            {/* Kualitas Udara */}
-            <div className="bg-gray-800 p-4 rounded-2xl shadow-lg">
-              <h2 className="text-lg font-semibold mb-2">Kualitas Udara</h2>
-              <GaugeComponent
-                value={data.airQuality}
-                minValue={0}
-                maxValue={1000}
-                arc={{
-                  subArcs: [
-                    { limit: 300, color: "#5BE12C" },
-                    { limit: 600, color: "#F5CD19" },
-                    { limit: 1000, color: "#EA4228" },
-                  ],
-                }}
-                pointer={{ type: "needle", color: "#fff" }}
-                labels={{
-                  valueLabel: {
-                    formatTextValue: (value) => `${value}`,
-                  },
-                }}
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <p className="text-red-400 text-center mt-10">
-          📭 Tidak ada data tersedia...
-        </p>
-      )}
+      {/* Floating Bottom Navigation */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-transparent backdrop-blur-lg text-gray-700 rounded-full shadow-2xl border border-[#45cad7] px-5 py-2 flex justify-between items-center gap-3 z-50">
+        <a
+          href="#"
+          className="flex flex-col items-center space-y-1.5 hover:bg-[#45cad7] hover:text-white p-4 rounded-full transition-colors duration-200
+          "
+        >
+          <i className="ri-home-5-line ri-xl"></i>
+          <p className="text-xs">Monitoring</p>
+        </a>
+        <a
+          href="#"
+          className="flex flex-col items-center space-y-1.5 hover:bg-[#45cad7] hover:text-white p-4 rounded-full transition-colors duration-200
+          "
+        >
+          <i className="ri-home-5-line ri-xl"></i>
+          <p className="text-xs">Monitoring</p>
+        </a>
+        <a
+          href="#"
+          className="flex flex-col items-center space-y-1.5 hover:bg-[#45cad7] hover:text-white p-4 rounded-full transition-colors duration-200
+          "
+        >
+          <i className="ri-home-5-line ri-xl"></i>
+          <p className="text-xs">Monitoring</p>
+        </a>
+      </div>
     </div>
   );
 }

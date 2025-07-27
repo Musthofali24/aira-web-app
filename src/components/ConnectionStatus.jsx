@@ -1,4 +1,12 @@
-function ConnectionStatus({ isConnected, time, formatDateTime }) {
+function ConnectionStatus({ isConnected, time }) {
+  const formatDateTime = (date) =>
+    `${date.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })} – ${date.toLocaleTimeString("id-ID")}`;
+
   return (
     <div className="text-center mt-2 mb-8">
       <p
