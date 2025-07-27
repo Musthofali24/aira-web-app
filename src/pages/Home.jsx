@@ -1,5 +1,3 @@
-import Navbar from "../components/Navbar";
-import FloatingNavbar from "../components/FloatingNavbar";
 import StatusCard from "../components/StatusCard";
 import DataSensorChart from "../components/DataSensorChart";
 
@@ -23,8 +21,9 @@ function Home() {
   };
 
   return (
-    <div className="bg-gradient-to-b bg-[#45cad7] text-white min-h-screen py-5">
-      <div className="max-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl p-6 shadow-lg">
+    <div className="bg-gradient-to-b bg-[#45cad7] text-white min-h-screen">
+      <div className="max-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl px-6 shadow-lg">
+        <h1>Data </h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatusCard
             title="Suhu"

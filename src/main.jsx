@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import "./index.css";
 import "remixicon/fonts/remixicon.css";
 import ChatBot from "./pages/ChatBot.jsx";
+import Settings from "./pages/Setting.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/udara" element={<Udara />} />
         <Route path="/artikel" element={<Artikel />} />
         <Route path="/chatbot" element={<ChatBot />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </App>
   </BrowserRouter>

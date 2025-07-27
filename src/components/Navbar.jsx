@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
 function Navbar() {
   const [showNotif, setShowNotif] = useState(false);
   const notifRef = useRef(null);
+  const { pathname } = useLocation();
+  const isActive = (path) => pathname === path;
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -94,7 +97,7 @@ function Navbar() {
             className="bg-[#2f9ea8] py-2 px-3 rounded-lg relative cursor-pointer"
           >
             <i className="ri-notification-3-line ri-lg"></i>
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+            <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
           </button>
 
           {/* Popup */}
@@ -127,9 +130,16 @@ function Navbar() {
           )}
         </div>
 
-        <a href="#" className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
+        <NavLink
+          to="/settings"
+          className={`py-2 px-3 rounded-lg transition-colors ${
+            isActive("/settings")
+              ? "bg-white text-[#2f9ea8]"
+              : "bg-[#2f9ea8] text-white hover:bg-[#45cad7]"
+          }`}
+        >
           <i className="ri-settings-3-line ri-lg"></i>
-        </a>
+        </NavLink>
       </div>
     </div>
   );
