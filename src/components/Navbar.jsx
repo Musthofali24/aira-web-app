@@ -72,7 +72,7 @@ function Navbar() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto flex justify-between items-center mb-5 relative">
+    <div className="max-w-4xl mx-auto flex justify-between items-center mb-5 relative px-5">
       <div className="flex items-center gap-4">
         <div className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
           <i className="ri-leaf-line ri-lg"></i>
@@ -104,7 +104,7 @@ function Navbar() {
           {showNotif && (
             <div
               ref={notifRef}
-              className="absolute right-0 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
+              className="absolute -right-5 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
             >
               <div className="text-lg font-semibold">Notifikasi</div>
               {notifications.map((notif) => (
