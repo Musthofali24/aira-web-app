@@ -1,7 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 function Navbar() {
   const [showNotif, setShowNotif] = useState(false);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    }
+
+    function handleScroll() {
+      setShowNotif(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const notifications = [
     {
@@ -62,9 +83,9 @@ function Navbar() {
       </div>
 
       <div className="flex items-center gap-3 relative">
-        <a href="#" className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
+        {/* <a href="#" className="bg-[#2f9ea8] py-2 px-3 rounded-lg">
           <i className="ri-moon-line ri-lg"></i>
-        </a>
+        </a> */}
 
         {/* Notifikasi */}
         <div className="relative">
@@ -78,7 +99,10 @@ function Navbar() {
 
           {/* Popup */}
           {showNotif && (
-            <div className="absolute right-0 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3">
+            <div
+              ref={notifRef}
+              className="absolute right-0 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
+            >
               <div className="text-lg font-semibold">Notifikasi</div>
               {notifications.map((notif) => (
                 <div
