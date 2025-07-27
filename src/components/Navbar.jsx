@@ -104,7 +104,7 @@ function Navbar() {
           {showNotif && (
             <div
               ref={notifRef}
-              className="absolute -right-5 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
+              className="absolute -right-15 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
             >
               <div className="text-lg font-semibold">Notifikasi</div>
               {notifications.map((notif) => (
