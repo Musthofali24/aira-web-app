@@ -55,7 +55,7 @@ function Home() {
   }, []);
 
   return (
-    <div className="bg-gradient-to-b from-[#45cad7] to-[#0c9aa6] text-white min-h-screen">
+    <div className="bg-[#45cad7] text-white min-h-screen mb-20 py-5">
       <div className="max-w-4xl mx-auto bg-white text-black min-h-screen rounded-2xl px-6 shadow-lg py-10">
         <h1 className="text-2xl font-bold mb-6">🔥 Data Sensor Realtime</h1>
 
