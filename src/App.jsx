@@ -5,10 +5,10 @@ import FloatingNavbar from "./components/FloatingNavbar";
 function App({ children }) {
   return (
     <div className="bg-gradient-to-b bg-[#45cad7] text-white min-h-screen py-5">
-      {/* Navbar selalu tampil */}
+      {/* Navbar */}
       <Navbar />
 
-      {/* Halaman spesifik akan muncul di sini */}
+      {/* Halaman */}
       {children}
 
       {/* Floating bottom navbar */}
