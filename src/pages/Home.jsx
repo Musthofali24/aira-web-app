@@ -1,6 +1,6 @@
 import StatusCard from "../components/StatusCard";
 import DataSensorChart from "../components/DataSensorChart";
-import { db } from "../firebase/config";
+import { rtdb } from "../firebase/config";
 import { ref, onValue } from "firebase/database";
 import { useEffect, useState } from "react";
 
@@ -8,7 +8,7 @@ function Home() {
   const [sensorData, setSensorData] = useState(null);
 
   useEffect(() => {
-    const sensorRef = ref(db, "sensor");
+    const sensorRef = ref(rtdb, "sensor");
     const unsubscribe = onValue(sensorRef, (snapshot) => {
       if (snapshot.exists()) {
         const raw = snapshot.val();

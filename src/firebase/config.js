@@ -1,6 +1,7 @@
 // src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbRmGAY3PytA2MLZag8n9FbiasZVoacdY",
@@ -16,6 +17,7 @@ const firebaseConfig = {
 
 // Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app); // untuk Realtime Database
+const db = getFirestore(app);
+const rtdb = getDatabase(app); // untuk Realtime Database
 
-export { db };
+export { db, rtdb };
