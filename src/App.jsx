@@ -1,6 +1,7 @@
 // App.jsx
 import Navbar from "./components/Navbar";
 import FloatingNavbar from "./components/FloatingNavbar";
+import { Toaster } from "react-hot-toast";
 
 function App({ children }) {
   return (
