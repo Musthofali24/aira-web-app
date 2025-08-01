@@ -2,7 +2,7 @@ import ConnectionStatusIndicator from "../components/ConnectionStatusIndicator";
 import StatusCard from "../components/StatusCard";
 import DataSensorChart from "../components/DataSensorChart";
 import { rtdb } from "../firebase/config";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, push, serverTimestamp } from "firebase/database";
 import { useEffect, useState, useRef } from "react";
 import WarningModal from "../components/WarningModal";
 
@@ -137,17 +137,24 @@ function Home() {
 
         // Logika Notifikasi dengan Cooldown
         const now = Date.now();
+        const notificationRef = ref(rtdb, "notifications");
+
         if (raw.temperature > 35) {
           if (
             lastTempNotificationTime.current === null ||
             now - lastTempNotificationTime.current > NOTIFICATION_COOLDOWN
           ) {
-            triggerWarningModal(
-              "Peringatan Suhu Kritis",
-              `Suhu terdeteksi terlalu PANAS: ${raw.temperature.toFixed(
-                1
-              )}°C. Harap periksa kondisi ruangan.`
-            );
+            const message = `Suhu terdeteksi terlalu PANAS: ${raw.temperature.toFixed(
+              1
+            )}°C.`;
+            triggerWarningModal("Peringatan Suhu Kritis", message);
+            // BARU: Kirim log ke RTDB
+            push(notificationRef, {
+              type: "Suhu Panas",
+              message: message,
+              value: raw.temperature,
+              timestamp: serverTimestamp(),
+            });
             lastTempNotificationTime.current = now;
           }
         } else {
@@ -159,12 +166,17 @@ function Home() {
             lastHumidNotificationTime.current === null ||
             now - lastHumidNotificationTime.current > NOTIFICATION_COOLDOWN
           ) {
-            triggerWarningModal(
-              "Peringatan Kelembapan",
-              `Kelembapan terdeteksi terlalu LEMBAB: ${raw.humidity.toFixed(
-                0
-              )}%. Kondisi ini dapat memicu pertumbuhan jamur.`
-            );
+            const message = `Kelembapan terdeteksi terlalu LEMBAB: ${raw.humidity.toFixed(
+              0
+            )}%.`;
+            triggerWarningModal("Peringatan Kelembapan", message);
+            // BARU: Kirim log ke RTDB
+            push(notificationRef, {
+              type: "Kelembapan Lembab",
+              message: message,
+              value: raw.humidity,
+              timestamp: serverTimestamp(),
+            });
             lastHumidNotificationTime.current = now;
           }
         } else {
@@ -176,10 +188,15 @@ function Home() {
             lastAqiNotificationTime.current === null ||
             now - lastAqiNotificationTime.current > NOTIFICATION_COOLDOWN
           ) {
-            triggerWarningModal(
-              "Peringatan Kualitas Udara",
-              `Kualitas udara terdeteksi BURUK: ${raw.airQuality} ppm. Disarankan mengurangi aktivitas di area ini.`
-            );
+            const message = `Kualitas udara terdeteksi BURUK: ${raw.airQuality} ppm.`;
+            triggerWarningModal("Peringatan Kualitas Udara", message);
+            // BARU: Kirim log ke RTDB
+            push(notificationRef, {
+              type: "Kualitas Udara Buruk",
+              message: message,
+              value: raw.airQuality,
+              timestamp: serverTimestamp(),
+            });
             lastAqiNotificationTime.current = now;
           }
         } else {
@@ -218,7 +235,7 @@ function Home() {
       </WarningModal>
 
       <div className="bg-[#45cad7] text-white min-h-screen mb-20 py-5">
-        <div className="max-w-4xl mx-auto bg-white text-black min-h-screen rounded-2xl px-6 shadow-lg py-10">
+        <div className="max-w-4xl mx-auto bg-white text-black min-h-screen rounded-2xl px-6 shadow-lg py-7">
           <div className="flex justify-between items-center mb-6">
             <ConnectionStatusIndicator isConnected={isEspOnline} />
             <p className="font-semibold text-sm text-black">
@@ -229,7 +246,7 @@ function Home() {
             </p>
           </div>
 
-          <div className="my-6 p-4 border border-dashed rounded-lg flex items-center gap-4">
+          {/* <div className="my-6 p-4 border border-dashed rounded-lg flex items-center gap-4">
             <p className="font-semibold text-sm text-gray-700">
               Uji Modal Peringatan:
             </p>
@@ -266,7 +283,7 @@ function Home() {
             >
               Tes Modal AQI
             </button>
-          </div>
+          </div> */}
 
           {sensorData ? (
             <>
