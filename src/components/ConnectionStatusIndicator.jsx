@@ -4,7 +4,7 @@ function ConnectionStatusIndicator({ isConnected }) {
   const textColor = isConnected ? "text-green-600" : "text-red-600";
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5">
+    <div className="flex items-center gap-2 px-3">
       <span className="relative flex h-3 w-3">
         {/* Animasi denyut hanya saat online */}
         {isConnected && (

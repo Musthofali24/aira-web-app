@@ -1,12 +1,22 @@
-function StatusCard({ title, value, unit, status, icon, iconBg }) {
+function StatusCard({
+  title,
+  value,
+  unit,
+  status,
+  icon,
+  iconBg,
+  detailedData = false,
+}) {
   return (
     <div className="bg-white p-4 rounded-2xl shadow-md flex items-center gap-5 transition-all hover:shadow-lg hover:-translate-y-1">
-      {/* Kolom Kiri: Ikon */}
-      <div
-        className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${iconBg}`}
-      >
-        <i className={`${icon} text-3xl`}></i>
-      </div>
+      {/* Kolom Kiri: Ikon (hanya tampil jika bukan detailed data) */}
+      {!detailedData && (
+        <div
+          className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center ${iconBg}`}
+        >
+          <i className={`${icon} text-3xl`}></i>
+        </div>
+      )}
 
       {/* Kolom Kanan: Konten Teks dengan Tata Letak Baru */}
       <div className="flex-grow">
