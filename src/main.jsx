@@ -2,7 +2,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
 import Statistik from "./pages/Statistik";
-import Udara from "./pages/Udara";
 import Artikel from "./pages/Artikel";
 import Home from "./pages/Home";
 import "./index.css";
@@ -16,7 +15,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/statistik" element={<Statistik />} />
-        <Route path="/udara" element={<Udara />} />
         <Route path="/artikel" element={<Artikel />} />
         <Route path="/chatbot" element={<ChatBot />} />
         <Route path="/settings" element={<Settings />} />
