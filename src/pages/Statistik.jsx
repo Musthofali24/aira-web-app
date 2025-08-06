@@ -4,6 +4,7 @@ import { useEspData } from "../hooks";
 import { useState } from "react";
 import WarningModal from "../components/WarningModal";
 import DataSensorChart from "../components/DataSensorChart";
+import { Gauge } from "@mui/x-charts/Gauge";
 
 function Statistik() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +27,94 @@ function Statistik() {
     { id: "tren", label: "Tren", icon: "ri-line-chart-line" },
     { id: "analitik", label: "Analitik", icon: "ri-bar-chart-line" },
     { id: "alert", label: "Alert", icon: "ri-notification-line" },
+  ];
+
+  // Data peringatan aktif (dummy data, bisa diganti dengan data real)
+  const activeWarnings = [
+    {
+      id: 1,
+      type: "VOC Tinggi Terdeteksi",
+      level: "warning",
+      value: "47 ppm",
+      threshold: "batas 20 ppm",
+      icon: "ri-error-warning-line",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200",
+      textColor: "text-yellow-800",
+      iconColor: "text-yellow-600",
+    },
+    {
+      id: 2,
+      type: "Suhu Tinggi",
+      level: "alert",
+      value: "40.0°C",
+      threshold: "",
+      icon: "ri-temp-hot-line",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      textColor: "text-red-800",
+      iconColor: "text-red-600",
+    },
+  ];
+
+  // Data riwayat peringatan 24 jam
+  const warningHistory = [
+    {
+      time: "08:45",
+      type: "Kelembaban rendah",
+      status: "resolved",
+      timeAgo: "8 jam lalu",
+    },
+    {
+      time: "02:20",
+      type: "PM2.5 meningkat",
+      status: "resolved",
+      timeAgo: "14 jam lalu",
+    },
+  ];
+
+  // Status sistem
+  const systemStatus = [
+    {
+      name: "Sensor Aktif",
+      count: "7/7",
+      status: "online",
+      icon: "ri-bar-chart-box-line",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      iconColor: "text-red-600",
+      textColor: "text-red-800",
+    },
+    {
+      name: "Notifikasi",
+      count: "Aktif",
+      status: "active",
+      icon: "ri-notification-3-line",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      iconColor: "text-blue-600",
+      textColor: "text-blue-800",
+    },
+    {
+      name: "Koneksi",
+      count: "Stabil",
+      status: "stable",
+      icon: "ri-signal-wifi-line",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      iconColor: "text-green-600",
+      textColor: "text-green-800",
+    },
+    {
+      name: "Database",
+      count: "Normal",
+      status: "normal",
+      icon: "ri-database-2-line",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200",
+      iconColor: "text-orange-600",
+      textColor: "text-orange-800",
+    },
   ];
 
   return (
@@ -60,7 +149,7 @@ function Statistik() {
         </div>
 
         {/* Tab Content */}
-        <div className="max-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl py-4 sm:py-7 px-3 sm:px-6 shadow-lg">
+        <div className="min-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl py-4 sm:py-7 px-3 sm:px-6 shadow-lg space-y-3">
           {/* Header - Last Update */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-2">
             <ConnectionStatusIndicator isConnected={isEspOnline} />
@@ -75,7 +164,63 @@ function Statistik() {
             <>
               {/* Overview Content - tampilan yang sudah ada */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
-                <div className="bg-white h-32 sm:h-75 rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 order-2 lg:order-1"></div>
+                <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 order-2 lg:order-1 p-4 sm:p-6">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                      Air Quality Index
+                    </h3>
+                    <div className="flex justify-center">
+                      <Gauge
+                        width={200}
+                        height={200}
+                        value={sensorData?.gas?.value || 0}
+                        valueMin={0}
+                        valueMax={1000}
+                        startAngle={-90}
+                        endAngle={90}
+                        sx={{
+                          [`& .MuiGauge-valueText`]: {
+                            fontSize: 32,
+                            transform: "translate(0px, 0px)",
+                            fill: "#374151",
+                            fontWeight: "bold",
+                          },
+                          [`& .MuiGauge-valueArc`]: {
+                            fill:
+                              sensorData?.gas?.value > 150
+                                ? "#ef4444"
+                                : sensorData?.gas?.value > 100
+                                ? "#f59e0b"
+                                : "#10b981",
+                          },
+                          [`& .MuiGauge-referenceArc`]: {
+                            fill: "#e5e7eb",
+                          },
+                        }}
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600">
+                        Status:{" "}
+                        <span
+                          className={`font-semibold ${
+                            (sensorData?.gas?.value || 0) > 150
+                              ? "text-red-600"
+                              : (sensorData?.gas?.value || 0) > 100
+                              ? "text-yellow-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {(sensorData?.gas?.value || 0) > 150
+                            ? "Berbahaya"
+                            : (sensorData?.gas?.value || 0) > 100
+                            ? "Sedang"
+                            : "Baik"}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 {sensorData ? (
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 order-1 lg:order-2">
@@ -123,8 +268,7 @@ function Statistik() {
                   </p>
                 )}
               </div>
-
-              {/* Detailed Data Cards */}
+              Detailed Data Cards
               {sensorData ? (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
@@ -192,7 +336,6 @@ function Statistik() {
                     : "ESP Offline atau tidak mengirim data..."}
                 </p>
               )}
-
               <div className="w-full overflow-x-auto">
                 <DataSensorChart data={sensorData} />
               </div>
@@ -207,73 +350,6 @@ function Statistik() {
               <div className="w-full overflow-x-auto mb-6">
                 <DataSensorChart data={sensorData} />
               </div>
-              {sensorData ? (
-                <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mt-6 sm:mt-8">
-                    <StatusCard
-                      title="Amonia"
-                      value={sensorData.amonia?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="NO"
-                      value={sensorData.no?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="CO"
-                      value={sensorData.co?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Benzena"
-                      value={sensorData.benzena?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Alkohol"
-                      value={sensorData.alkohol?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm sm:text-lg">
-                  {isEspOnline
-                    ? "Menunggu data sensor pertama..."
-                    : "ESP Offline atau tidak mengirim data..."}
-                </p>
-              )}
             </>
           )}
 
@@ -285,189 +361,141 @@ function Statistik() {
               <div className="w-full overflow-x-auto mb-6">
                 <DataSensorChart data={sensorData} />
               </div>
-              {sensorData ? (
-                <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
-                    <StatusCard
-                      title="Amonia"
-                      value={sensorData.amonia?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="NO"
-                      value={sensorData.no?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="CO"
-                      value={sensorData.co?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Benzena"
-                      value={sensorData.benzena?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Alkohol"
-                      value={sensorData.alkohol?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8">
-                    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-                        Analisis Kualitas Udara
-                      </h3>
-                      <div className="space-y-2 text-xs sm:text-sm">
-                        <p>• CO Level: Normal (&lt; 9 ppm)</p>
-                        <p>• NO Level: Normal (&lt; 25 ppm)</p>
-                        <p>• Benzena: Normal (&lt; 5 ppm)</p>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-                        Trend Harian
-                      </h3>
-                      <div className="space-y-2 text-xs sm:text-sm">
-                        <p>• CO: Stabil</p>
-                        <p>• NO: Menurun</p>
-                        <p>• Amonia: Stabil</p>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-                        Rekomendasi
-                      </h3>
-                      <div className="space-y-2 text-xs sm:text-sm">
-                        <p>• Ventilasi cukup baik</p>
-                        <p>• Monitoring rutin</p>
-                        <p>• Perawatan sensor</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm sm:text-lg">
-                  {isEspOnline
-                    ? "Menunggu data untuk analitik..."
-                    : "ESP Offline atau tidak mengirim data..."}
-                </p>
-              )}
             </>
           )}
 
           {activeTab === "alert" && (
             <>
-              {sensorData ? (
-                <>
-                  <div className="grid grid-cols-1 gap-2 sm:gap-4 mt-6 sm:mt-8 mb-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg shadow-md p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-red-800">
-                        Alert Status
-                      </h3>
-                      <div className="space-y-2 text-xs sm:text-sm text-red-700">
-                        <p>✓ Semua sensor dalam kondisi normal</p>
-                        <p>✓ Tidak ada peringatan aktif</p>
-                        <p>✓ Kualitas udara baik</p>
+              {/* Peringatan Aktif */}
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <h1 className="text-black font-semibold text-lg">
+                    Peringatan Aktif
+                  </h1>
+                  {activeWarnings.length > 0 && (
+                    <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">
+                      {activeWarnings.length}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  {activeWarnings.length > 0 ? (
+                    activeWarnings.map((warning) => (
+                      <div
+                        key={warning.id}
+                        className={`${warning.bgColor} ${warning.borderColor} border rounded-lg p-4 flex items-center justify-between`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <i
+                            className={`${warning.icon} text-xl ${warning.iconColor}`}
+                          ></i>
+                          <div>
+                            <p
+                              className={`font-semibold text-sm ${warning.textColor}`}
+                            >
+                              {warning.type}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Nilai {warning.value} {warning.threshold}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              warning.level === "alert"
+                                ? "bg-red-400"
+                                : "bg-yellow-400"
+                            } animate-pulse`}
+                          ></div>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                      <i className="ri-checkbox-circle-line text-3xl text-green-600"></i>
+                      <p className="text-green-800 font-medium mt-2">
+                        Tidak ada peringatan aktif
+                      </p>
+                      <p className="text-green-600 text-sm">
+                        Semua sensor dalam kondisi normal
+                      </p>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
-                    <StatusCard
-                      title="Amonia"
-                      value={sensorData.amonia?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="NO"
-                      value={sensorData.no?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="CO"
-                      value={sensorData.co?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Benzena"
-                      value={sensorData.benzena?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                    <StatusCard
-                      title="Alkohol"
-                      value={sensorData.alkohol?.value || 0}
-                      unit="ppm"
-                      status={{
-                        text: "Normal",
-                        textColor: "text-green-800",
-                        bgColor: "bg-green-100",
-                      }}
-                      detailedData={true}
-                    />
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-500 text-sm sm:text-lg">
-                  {isEspOnline
-                    ? "Menunggu data untuk alert..."
-                    : "ESP Offline atau tidak mengirim data..."}
-                </p>
-              )}
+                  )}
+                </div>
+              </div>
+              {/* Riwayat Peringatan */}
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
+                <h1 className="text-black font-semibold text-lg mb-4">
+                  Riwayat Peringatan (24 Jam Terakhir)
+                </h1>
+
+                <div className="space-y-3">
+                  {warningHistory.length > 0 ? (
+                    warningHistory.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">
+                              {item.time}
+                            </p>
+                            <p className="text-xs text-gray-600">{item.type}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {item.timeAgo}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">
+                      Tidak ada riwayat peringatan
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* Status Sistem Peringatan */}
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
+                <h1 className="text-black font-semibold text-lg mb-4">
+                  Status Sistem Peringatan
+                </h1>
+
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {systemStatus.map((system, index) => (
+                    <div
+                      key={index}
+                      className={`${system.bgColor} ${system.borderColor} border rounded-lg p-3 sm:p-4 text-center transition-all hover:shadow-md`}
+                    >
+                      <i
+                        className={`${system.icon} text-2xl ${system.iconColor}`}
+                      ></i>
+                      <p
+                        className={`text-sm font-semibold ${system.textColor} mt-2`}
+                      >
+                        {system.name}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {system.count}
+                      </p>
+                      <div
+                        className={`w-2 h-2 rounded-full mx-auto mt-2 ${
+                          system.status === "online" ||
+                          system.status === "active" ||
+                          system.status === "stable" ||
+                          system.status === "normal"
+                            ? "bg-green-400"
+                            : "bg-red-400"
+                        }`}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </>
           )}
         </div>

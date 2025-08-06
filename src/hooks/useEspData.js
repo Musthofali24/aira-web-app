@@ -64,7 +64,13 @@ const getStatusStyles = (type, value) => {
   return styles;
 };
 
-const NOTIFICATION_COOLDOWN = 150000;
+// Pengaturan Notifikasi (dalam milidetik)
+// 60000 = 1 menit
+// 120000 = 2 menit
+// 150000 = 2.5 menit
+// 300000 = 5 menit
+// 600000 = 10 menit
+const NOTIFICATION_COOLDOWN = 10000;
 const ESP_OFFLINE_THRESHOLD = 60000;
 
 export const useEspData = (options = {}) => {
@@ -86,6 +92,21 @@ export const useEspData = (options = {}) => {
   const lastTempNotificationTime = useRef(null);
   const lastHumidNotificationTime = useRef(null);
   const lastAqiNotificationTime = useRef(null);
+
+  // Load notification times from localStorage on mount
+  useEffect(() => {
+    if (enableNotifications) {
+      const tempTime = localStorage.getItem("lastTempNotification");
+      const humidTime = localStorage.getItem("lastHumidNotification");
+      const aqiTime = localStorage.getItem("lastAqiNotification");
+
+      lastTempNotificationTime.current = tempTime ? parseInt(tempTime) : null;
+      lastHumidNotificationTime.current = humidTime
+        ? parseInt(humidTime)
+        : null;
+      lastAqiNotificationTime.current = aqiTime ? parseInt(aqiTime) : null;
+    }
+  }, [enableNotifications]);
 
   useEffect(() => {
     // 1. Listener untuk data sensor dari ESP
@@ -187,9 +208,11 @@ export const useEspData = (options = {}) => {
                 timestamp: serverTimestamp(),
               });
               lastTempNotificationTime.current = now;
+              localStorage.setItem("lastTempNotification", now.toString());
             }
           } else {
             lastTempNotificationTime.current = null;
+            localStorage.removeItem("lastTempNotification");
           }
 
           // Humidity notification
@@ -209,9 +232,11 @@ export const useEspData = (options = {}) => {
                 timestamp: serverTimestamp(),
               });
               lastHumidNotificationTime.current = now;
+              localStorage.setItem("lastHumidNotification", now.toString());
             }
           } else {
             lastHumidNotificationTime.current = null;
+            localStorage.removeItem("lastHumidNotification");
           }
 
           // Air quality notification
@@ -229,9 +254,11 @@ export const useEspData = (options = {}) => {
                 timestamp: serverTimestamp(),
               });
               lastAqiNotificationTime.current = now;
+              localStorage.setItem("lastAqiNotification", now.toString());
             }
           } else {
             lastAqiNotificationTime.current = null;
+            localStorage.removeItem("lastAqiNotification");
           }
         }
 
