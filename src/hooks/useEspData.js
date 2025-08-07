@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { rtdb, db } from "../firebase/config";
 import { ref, onValue } from "firebase/database";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useSettings } from "./useSettings";
 
 const getStatusStyles = (type, value) => {
   let statusText = "";
@@ -65,13 +66,8 @@ const getStatusStyles = (type, value) => {
   return styles;
 };
 
-// Pengaturan Notifikasi (dalam milidetik)
-// 60000 = 1 menit
-// 120000 = 2 menit
-// 150000 = 2.5 menit
-// 300000 = 5 menit
-// 600000 = 10 menit
-const NOTIFICATION_COOLDOWN = 100000;
+// Pengaturan default (akan di-override oleh settings dari Firestore)
+const DEFAULT_NOTIFICATION_COOLDOWN = 150000; // 2.5 menit
 const ESP_OFFLINE_THRESHOLD = 60000;
 
 export const useEspData = (options = {}) => {
@@ -82,6 +78,9 @@ export const useEspData = (options = {}) => {
     triggerWarningModal = null,
     processedSensorData = false,
   } = options;
+
+  // Load settings dari Firestore
+  const { settings, getNotificationCooldown } = useSettings();
 
   const [isEspOnline, setIsEspOnline] = useState(false);
   const [lastTimestamp, setLastTimestamp] = useState(null);
@@ -188,15 +187,20 @@ export const useEspData = (options = {}) => {
         }
 
         // Logika Notifikasi (hanya jika diaktifkan)
-        if (enableNotifications && triggerWarningModal) {
+        if (
+          enableNotifications &&
+          triggerWarningModal &&
+          settings.notifications.enabled
+        ) {
           const now = Date.now();
           const notificationsRef = collection(db, "notifications");
+          const cooldownMs = getNotificationCooldown();
 
           // Temperature notification
-          if (raw.temperature > 35) {
+          if (raw.temperature > settings.notifications.temperatureThreshold) {
             if (
               lastTempNotificationTime.current === null ||
-              now - lastTempNotificationTime.current > NOTIFICATION_COOLDOWN
+              now - lastTempNotificationTime.current > cooldownMs
             ) {
               const message = `Suhu terdeteksi terlalu PANAS: ${raw.temperature.toFixed(
                 1
@@ -225,10 +229,10 @@ export const useEspData = (options = {}) => {
           }
 
           // Humidity notification
-          if (raw.humidity > 80) {
+          if (raw.humidity > settings.notifications.humidityThreshold) {
             if (
               lastHumidNotificationTime.current === null ||
-              now - lastHumidNotificationTime.current > NOTIFICATION_COOLDOWN
+              now - lastHumidNotificationTime.current > cooldownMs
             ) {
               const message = `Kelembapan terdeteksi terlalu LEMBAB: ${raw.humidity.toFixed(
                 0
@@ -257,10 +261,10 @@ export const useEspData = (options = {}) => {
           }
 
           // Air quality notification
-          if (raw.airQuality > 700) {
+          if (raw.airQuality > settings.notifications.airQualityThreshold) {
             if (
               lastAqiNotificationTime.current === null ||
-              now - lastAqiNotificationTime.current > NOTIFICATION_COOLDOWN
+              now - lastAqiNotificationTime.current > cooldownMs
             ) {
               const message = `Kualitas udara terdeteksi BURUK: ${raw.airQuality} ppm.`;
               triggerWarningModal("Peringatan Kualitas Udara", message);
@@ -319,6 +323,11 @@ export const useEspData = (options = {}) => {
     enableNotifications,
     triggerWarningModal,
     processedSensorData,
+    settings.notifications.enabled,
+    settings.notifications.temperatureThreshold,
+    settings.notifications.humidityThreshold,
+    settings.notifications.airQualityThreshold,
+    getNotificationCooldown,
   ]);
 
   return {
