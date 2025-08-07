@@ -1,8 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { db } from "../firebase/config";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 
 function Navbar() {
   const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const notifRef = useRef(null);
   const { pathname } = useLocation();
   const isActive = (path) => pathname === path;
@@ -27,48 +38,123 @@ function Navbar() {
     };
   }, []);
 
-  const notifications = [
-    {
-      id: 1,
-      title: "Kualitas Udara Buruk",
-      message: "PM2.5 tinggi (45 µg/m³). Aktifkan air purifier segera!",
-      icon: "ri-error-warning-line",
-      type: "danger",
-      time: "2 menit lalu",
-    },
-    {
-      id: 2,
-      title: "CO2 Tinggi Terdeteksi",
-      message:
-        "Level CO2 mencapai 850 ppm. Buka ventilasi untuk sirkulasi udara.",
-      icon: "ri-windy-line",
-      type: "warning",
-      time: "5 menit lalu",
-    },
-    {
-      id: 3,
-      title: "Kualitas Udara Sangat Baik",
-      message:
-        "Semua parameter udara dalam kondisi optimal untuk kesehatan tanaman.",
-      icon: "ri-checkbox-circle-line",
-      type: "success",
-      time: "10 menit lalu",
-    },
-    {
-      id: 4,
-      title: "Oksigen Level Optimal",
-      message: "Kadar oksigen 20.8% - Sangat baik untuk fotosintesis tanaman.",
-      icon: "ri-leaf-line",
-      type: "info",
-      time: "12 menit lalu",
-    },
-  ];
+  // Real-time listener untuk notifikasi dari Firestore
+  useEffect(() => {
+    const notificationsRef = collection(db, "notifications");
+    const q = query(
+      notificationsRef,
+      orderBy("timestamp", "desc"),
+      limit(20) // Ambil lebih banyak untuk filtering client-side
+    );
 
-  const typeStyle = {
-    danger: "border-red-300 bg-red-50 text-red-700",
-    warning: "border-yellow-300 bg-yellow-50 text-yellow-700",
-    success: "border-green-300 bg-green-50 text-green-700",
-    info: "border-blue-300 bg-blue-50 text-blue-700",
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifData = [];
+      const now = new Date();
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const notifDate = data.timestamp?.toDate() || new Date(data.createdAt);
+        const hoursDiff = (now - notifDate) / (1000 * 60 * 60);
+
+        // Auto-dismiss notifikasi yang lebih dari 24 jam
+        if (hoursDiff > 24 && !data.dismissed) {
+          updateDoc(doc.ref, { dismissed: true, dismissedAt: new Date() });
+          return; // Skip notifikasi yang auto-dismissed
+        }
+
+        // Hanya tampilkan notifikasi yang belum di-dismiss
+        // Jika field dismissed tidak ada (notifikasi lama), anggap sebagai belum di-dismiss
+        if (data.dismissed !== true) {
+          notifData.push({
+            id: doc.id,
+            ref: doc.ref,
+            ...data,
+            // Format time ago
+            timeAgo: formatTimeAgo(notifDate),
+          });
+        }
+      });
+
+      // Batasi hanya 10 notifikasi terbaru setelah filtering
+      setNotifications(notifData.slice(0, 10));
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Function untuk dismiss notifikasi secara manual
+  const dismissNotification = async (notifRef) => {
+    try {
+      console.log("Dismissing notification...", notifRef);
+      await updateDoc(notifRef, {
+        dismissed: true,
+        dismissedAt: new Date(),
+      });
+      console.log("Notification dismissed successfully");
+    } catch (error) {
+      console.error("Error dismissing notification:", error);
+    }
+  };
+
+  // Function untuk dismiss semua notifikasi
+  const dismissAllNotifications = async () => {
+    try {
+      console.log("Dismissing all notifications...", notifications.length);
+      const dismissPromises = notifications.map((notif) =>
+        updateDoc(notif.ref, {
+          dismissed: true,
+          dismissedAt: new Date(),
+        })
+      );
+      await Promise.all(dismissPromises);
+      console.log("All notifications dismissed successfully");
+    } catch (error) {
+      console.error("Error dismissing all notifications:", error);
+    }
+  };
+
+  // Function untuk format "time ago"
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return `${diffInSeconds} detik lalu`;
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} menit lalu`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} jam lalu`;
+    return `${Math.floor(diffInSeconds / 86400)} hari lalu`;
+  };
+
+  // Function untuk mendapatkan icon berdasarkan tipe notifikasi
+  const getNotificationIcon = (type, severity) => {
+    switch (type) {
+      case "Suhu Panas":
+        return "ri-fire-line";
+      case "Kelembapan Lembab":
+        return "ri-drop-line";
+      case "Kualitas Udara Buruk":
+        return "ri-windy-line";
+      default:
+        return severity === "high"
+          ? "ri-error-warning-line"
+          : "ri-information-line";
+    }
+  };
+
+  // Function untuk mendapatkan style berdasarkan severity
+  const getSeverityStyle = (severity) => {
+    switch (severity) {
+      case "high":
+        return "border-red-300 bg-red-50 text-red-700";
+      case "medium":
+        return "border-yellow-300 bg-yellow-50 text-yellow-700";
+      case "low":
+        return "border-blue-300 bg-blue-50 text-blue-700";
+      default:
+        return "border-gray-300 bg-gray-50 text-gray-700";
+    }
   };
 
   return (
@@ -97,7 +183,9 @@ function Navbar() {
             className="bg-[#2f9ea8] py-2 px-3 rounded-lg relative cursor-pointer"
           >
             <i className="ri-notification-3-line ri-lg"></i>
-            <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+            {notifications.length > 0 && (
+              <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
+            )}
           </button>
 
           {/* Popup */}
@@ -106,26 +194,81 @@ function Navbar() {
               ref={notifRef}
               className="absolute -right-15 mt-2 w-80 bg-white text-gray-800 rounded-xl shadow-lg z-50 px-4 py-3 max-h-96 overflow-y-auto space-y-3"
             >
-              <div className="text-lg font-semibold">Notifikasi</div>
-              {notifications.map((notif) => (
-                <div
-                  key={notif.id}
-                  className={`p-3 rounded-lg border ${
-                    typeStyle[notif.type]
-                  } shadow-sm`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="pt-1">
-                      <i className={`${notif.icon} text-xl`}></i>
-                    </div>
-                    <div className="text-sm">
-                      <h4 className="font-bold mb-1">{notif.title}</h4>
-                      <p className="text-xs mb-1">{notif.message}</p>
-                      <p className="text-[11px] text-gray-400">{notif.time}</p>
+              <div className="text-lg font-semibold flex items-center justify-between">
+                <span>Notifikasi</span>
+                <div className="flex items-center gap-2">
+                  {notifications.length > 0 && (
+                    <>
+                      <button
+                        onClick={dismissAllNotifications}
+                        className="text-sm text-gray-500 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors duration-200 flex items-center gap-1"
+                        title="Hapus Semua Notifikasi"
+                      >
+                        <i className="ri-delete-bin-7-line text-base"></i>
+                      </button>
+                      <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-semibold">
+                        {notifications.length}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#2f9ea8]"></div>
+                  <span className="ml-2 text-sm text-gray-500">Loading...</span>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <i className="ri-notification-off-line text-2xl mb-2 block"></i>
+                  <p className="text-sm">Belum ada notifikasi</p>
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <div
+                    key={notif.id}
+                    className={`p-3 rounded-lg border ${getSeverityStyle(
+                      notif.severity
+                    )} shadow-sm relative group`}
+                  >
+                    {/* Close Button */}
+                    <button
+                      onClick={() => dismissNotification(notif.ref)}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-200 hover:bg-red-100 flex items-center justify-center opacity-70 hover:opacity-100 transition-all duration-200 hover:scale-110"
+                      title="Tutup notifikasi"
+                    >
+                      <i className="ri-close-line text-sm text-gray-600 hover:text-red-600"></i>
+                    </button>
+
+                    <div className="flex items-start gap-3 pr-6">
+                      <div className="pt-1">
+                        <i
+                          className={`${getNotificationIcon(
+                            notif.type,
+                            notif.severity
+                          )} text-xl`}
+                        ></i>
+                      </div>
+                      <div className="text-sm">
+                        <h4 className="font-bold mb-1">{notif.type}</h4>
+                        <p className="text-xs mb-1">{notif.message}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] text-gray-400">
+                            {notif.timeAgo}
+                          </p>
+                          {notif.value && (
+                            <span className="text-[10px] bg-gray-200 px-1.5 py-0.5 rounded">
+                              {notif.value}
+                              {notif.unit}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
