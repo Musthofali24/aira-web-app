@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { rtdb } from "../firebase/config";
-import { ref, onValue, push, serverTimestamp } from "firebase/database";
+import { rtdb, db } from "../firebase/config";
+import { ref, onValue } from "firebase/database";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const getStatusStyles = (type, value) => {
   let statusText = "";
@@ -70,7 +71,7 @@ const getStatusStyles = (type, value) => {
 // 150000 = 2.5 menit
 // 300000 = 5 menit
 // 600000 = 10 menit
-const NOTIFICATION_COOLDOWN = 10000;
+const NOTIFICATION_COOLDOWN = 100000;
 const ESP_OFFLINE_THRESHOLD = 60000;
 
 export const useEspData = (options = {}) => {
@@ -189,7 +190,7 @@ export const useEspData = (options = {}) => {
         // Logika Notifikasi (hanya jika diaktifkan)
         if (enableNotifications && triggerWarningModal) {
           const now = Date.now();
-          const notificationRef = ref(rtdb, "notifications");
+          const notificationsRef = collection(db, "notifications");
 
           // Temperature notification
           if (raw.temperature > 35) {
@@ -201,12 +202,20 @@ export const useEspData = (options = {}) => {
                 1
               )}°C.`;
               triggerWarningModal("Peringatan Suhu Kritis", message);
-              push(notificationRef, {
+
+              // Simpan ke Firestore
+              addDoc(notificationsRef, {
                 type: "Suhu Panas",
                 message: message,
                 value: raw.temperature,
+                unit: "°C",
+                severity: "high",
+                source: "ESP32",
+                dismissed: false,
                 timestamp: serverTimestamp(),
+                createdAt: new Date().toISOString(),
               });
+
               lastTempNotificationTime.current = now;
               localStorage.setItem("lastTempNotification", now.toString());
             }
@@ -225,12 +234,20 @@ export const useEspData = (options = {}) => {
                 0
               )}%.`;
               triggerWarningModal("Peringatan Kelembapan", message);
-              push(notificationRef, {
+
+              // Simpan ke Firestore
+              addDoc(notificationsRef, {
                 type: "Kelembapan Lembab",
                 message: message,
                 value: raw.humidity,
+                unit: "%",
+                severity: "medium",
+                source: "ESP32",
+                dismissed: false,
                 timestamp: serverTimestamp(),
+                createdAt: new Date().toISOString(),
               });
+
               lastHumidNotificationTime.current = now;
               localStorage.setItem("lastHumidNotification", now.toString());
             }
@@ -247,12 +264,20 @@ export const useEspData = (options = {}) => {
             ) {
               const message = `Kualitas udara terdeteksi BURUK: ${raw.airQuality} ppm.`;
               triggerWarningModal("Peringatan Kualitas Udara", message);
-              push(notificationRef, {
+
+              // Simpan ke Firestore
+              addDoc(notificationsRef, {
                 type: "Kualitas Udara Buruk",
                 message: message,
                 value: raw.airQuality,
+                unit: "ppm",
+                severity: "high",
+                source: "ESP32",
+                dismissed: false,
                 timestamp: serverTimestamp(),
+                createdAt: new Date().toISOString(),
               });
+
               lastAqiNotificationTime.current = now;
               localStorage.setItem("lastAqiNotification", now.toString());
             }
