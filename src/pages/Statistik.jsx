@@ -119,6 +119,23 @@ function Statistik() {
 
   return (
     <>
+      <style>
+        {`
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          @media (max-width: 475px) {
+            .xs\\:inline {
+              display: inline !important;
+            }
+          }
+        `}
+      </style>
+
       <WarningModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -127,31 +144,31 @@ function Statistik() {
         {modalContent.message}
       </WarningModal>
 
-      <div className="grid grid-cols-1 gap-3 bg-gradient-to-b bg-[#45cad7] text-white min-h-screen mb-20 px-4">
-        <div className="max-w-4xl mx-auto rounded-2xl p-3 sm:p-6">
+      <div className="grid grid-cols-1 gap-3 bg-gradient-to-b bg-[#45cad7] text-white min-h-screen mb-20 px-3 sm:px-4">
+        <div className="w-full max-w-4xl mx-auto rounded-2xl p-2 sm:p-3 lg:p-6">
           {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-[#e8fdff] p-1 rounded-lg overflow-x-auto">
+          <div className="flex space-x-1 bg-[#e8fdff] p-1 rounded-lg overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-fit flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 rounded-md font-medium text-xs sm:text-sm transition-all duration-200 ${
+                className={`flex-1 min-w-fit flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 rounded-md font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
                     ? "bg-white text-[#45cad7] shadow-sm"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
-                <i className={tab.icon}></i>
-                <span className="hidden sm:inline">{tab.label}</span>
+                <i className={`${tab.icon} text-sm sm:text-base`}></i>
+                <span className="hidden xs:inline sm:inline">{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Tab Content */}
-        <div className="min-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl py-4 sm:py-7 px-3 sm:px-6 shadow-lg space-y-3">
+        <div className="w-full max-w-4xl mx-auto bg-[#e8fdff] min-h-screen rounded-2xl py-3 sm:py-4 lg:py-7 px-2 sm:px-3 lg:px-6 shadow-lg space-y-3 sm:space-y-4">
           {/* Header - Last Update */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 sm:mb-4 lg:mb-6 gap-2">
             <ConnectionStatusIndicator isConnected={isEspOnline} />
             <p className="font-semibold text-xs sm:text-sm text-black">
               Last Update :{" "}
@@ -163,16 +180,16 @@ function Statistik() {
           {activeTab === "overview" && (
             <>
               {/* Overview Content - tampilan yang sudah ada */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 sm:mb-8">
-                <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 order-2 lg:order-1 p-4 sm:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
+                <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 order-2 lg:order-1 p-3 sm:p-4 lg:p-6">
                   <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
                       Air Quality Index
                     </h3>
                     <div className="flex justify-center">
                       <Gauge
-                        width={200}
-                        height={200}
+                        width={140}
+                        height={140}
                         value={sensorData?.gas?.value || 0}
                         valueMin={0}
                         valueMax={1000}
@@ -180,7 +197,7 @@ function Statistik() {
                         endAngle={90}
                         sx={{
                           [`& .MuiGauge-valueText`]: {
-                            fontSize: 32,
+                            fontSize: 22,
                             transform: "translate(0px, 0px)",
                             fill: "#374151",
                             fontWeight: "bold",
@@ -199,8 +216,8 @@ function Statistik() {
                         }}
                       />
                     </div>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600">
+                    <div className="mt-3 sm:mt-4">
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Status:{" "}
                         <span
                           className={`font-semibold ${
@@ -223,7 +240,7 @@ function Statistik() {
                 </div>
                 {sensorData ? (
                   <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 order-1 lg:order-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-3 order-1 lg:order-2">
                       <StatusCard
                         title="Temperature"
                         value={sensorData.temperature.value}
@@ -241,7 +258,7 @@ function Statistik() {
                         iconBg="bg-blue-100"
                       />
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 order-3 lg:order-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-3 order-3 lg:order-3">
                       <StatusCard
                         title="AQI"
                         value={sensorData.gas.value}
@@ -261,17 +278,17 @@ function Statistik() {
                     </div>
                   </>
                 ) : (
-                  <p className="text-gray-500 text-sm sm:text-lg col-span-full">
+                  <p className="text-gray-500 text-xs sm:text-sm lg:text-lg col-span-full text-center">
                     {isEspOnline
                       ? "Menunggu data sensor pertama..."
                       : "ESP Offline atau tidak mengirim data..."}
                   </p>
                 )}
               </div>
-              Detailed Data Cards
+              {/* Detailed Data Cards */}
               {sensorData ? (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
                     <StatusCard
                       title="Amonia"
                       value={sensorData.amonia?.value || 0}
@@ -330,7 +347,7 @@ function Statistik() {
                   </div>
                 </>
               ) : (
-                <p className="text-gray-500 text-sm sm:text-lg">
+                <p className="text-gray-500 text-xs sm:text-sm lg:text-lg text-center">
                   {isEspOnline
                     ? "Menunggu data sensor pertama..."
                     : "ESP Offline atau tidak mengirim data..."}
@@ -367,9 +384,9 @@ function Statistik() {
           {activeTab === "alert" && (
             <>
               {/* Peringatan Aktif */}
-              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <h1 className="text-black font-semibold text-lg">
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-3 sm:p-4 lg:p-6">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                  <h1 className="text-black font-semibold text-base sm:text-lg">
                     Peringatan Aktif
                   </h1>
                   {activeWarnings.length > 0 && (
@@ -379,20 +396,20 @@ function Statistik() {
                   )}
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {activeWarnings.length > 0 ? (
                     activeWarnings.map((warning) => (
                       <div
                         key={warning.id}
-                        className={`${warning.bgColor} ${warning.borderColor} border rounded-lg p-4 flex items-center justify-between`}
+                        className={`${warning.bgColor} ${warning.borderColor} border rounded-lg p-3 sm:p-4 flex items-center justify-between`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <i
-                            className={`${warning.icon} text-xl ${warning.iconColor}`}
+                            className={`${warning.icon} text-lg sm:text-xl ${warning.iconColor}`}
                           ></i>
                           <div>
                             <p
-                              className={`font-semibold text-sm ${warning.textColor}`}
+                              className={`font-semibold text-xs sm:text-sm ${warning.textColor}`}
                             >
                               {warning.type}
                             </p>
@@ -403,7 +420,7 @@ function Statistik() {
                         </div>
                         <div className="text-right">
                           <div
-                            className={`w-3 h-3 rounded-full ${
+                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
                               warning.level === "alert"
                                 ? "bg-red-400"
                                 : "bg-yellow-400"
@@ -413,12 +430,12 @@ function Statistik() {
                       </div>
                     ))
                   ) : (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                      <i className="ri-checkbox-circle-line text-3xl text-green-600"></i>
-                      <p className="text-green-800 font-medium mt-2">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 text-center">
+                      <i className="ri-checkbox-circle-line text-2xl sm:text-3xl text-green-600"></i>
+                      <p className="text-green-800 font-medium mt-2 text-sm sm:text-base">
                         Tidak ada peringatan aktif
                       </p>
-                      <p className="text-green-600 text-sm">
+                      <p className="text-green-600 text-xs sm:text-sm">
                         Semua sensor dalam kondisi normal
                       </p>
                     </div>
@@ -426,22 +443,22 @@ function Statistik() {
                 </div>
               </div>
               {/* Riwayat Peringatan */}
-              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
-                <h1 className="text-black font-semibold text-lg mb-4">
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-3 sm:p-4 lg:p-6">
+                <h1 className="text-black font-semibold text-base sm:text-lg mb-3 sm:mb-4">
                   Riwayat Peringatan (24 Jam Terakhir)
                 </h1>
 
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {warningHistory.length > 0 ? (
                     warningHistory.map((item, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                           <div>
-                            <p className="text-sm font-medium text-gray-800">
+                            <p className="text-xs sm:text-sm font-medium text-gray-800">
                               {item.time}
                             </p>
                             <p className="text-xs text-gray-600">{item.type}</p>
@@ -453,29 +470,29 @@ function Statistik() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-center py-4">
+                    <p className="text-gray-500 text-center py-4 text-sm">
                       Tidak ada riwayat peringatan
                     </p>
                   )}
                 </div>
               </div>
               {/* Status Sistem Peringatan */}
-              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-4 sm:p-6">
-                <h1 className="text-black font-semibold text-lg mb-4">
+              <div className="bg-white rounded-2xl shadow-md transition-all hover:shadow-lg hover:-translate-y-1 p-3 sm:p-4 lg:p-6">
+                <h1 className="text-black font-semibold text-base sm:text-lg mb-3 sm:mb-4">
                   Status Sistem Peringatan
                 </h1>
 
-                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                   {systemStatus.map((system, index) => (
                     <div
                       key={index}
-                      className={`${system.bgColor} ${system.borderColor} border rounded-lg p-3 sm:p-4 text-center transition-all hover:shadow-md`}
+                      className={`${system.bgColor} ${system.borderColor} border rounded-lg p-2 sm:p-3 lg:p-4 text-center transition-all hover:shadow-md`}
                     >
                       <i
-                        className={`${system.icon} text-2xl ${system.iconColor}`}
+                        className={`${system.icon} text-xl sm:text-2xl ${system.iconColor}`}
                       ></i>
                       <p
-                        className={`text-sm font-semibold ${system.textColor} mt-2`}
+                        className={`text-xs sm:text-sm font-semibold ${system.textColor} mt-1 sm:mt-2`}
                       >
                         {system.name}
                       </p>
@@ -483,7 +500,7 @@ function Statistik() {
                         {system.count}
                       </p>
                       <div
-                        className={`w-2 h-2 rounded-full mx-auto mt-2 ${
+                        className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mx-auto mt-1 sm:mt-2 ${
                           system.status === "online" ||
                           system.status === "active" ||
                           system.status === "stable" ||

@@ -1,6 +1,7 @@
 import ConnectionStatusIndicator from "../components/ConnectionStatusIndicator";
 import StatusCard from "../components/StatusCard";
 import DataSensorChart from "../components/DataSensorChart";
+import MapCard from "../components/MapCard";
 import { useState } from "react";
 import WarningModal from "../components/WarningModal";
 import { useEspData } from "../hooks";
@@ -70,6 +71,9 @@ function Home() {
                   iconBg="bg-green-100"
                 />
               </div>
+
+              {/* Map Card with Air Quality Data */}
+              <MapCard />
 
               <DataSensorChart data={sensorData} />
             </>
