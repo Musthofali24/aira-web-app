@@ -21,7 +21,7 @@ function MapCard() {
   const [error, setError] = useState(null);
 
   // API Key OpenWeatherMap
-  const API_KEY = "71cec26aae7f67e7f8d04e6baf1aef33";
+  const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
   // Koordinat multiple cities di Asia Tenggara dan beberapa kota besar dunia
   const cities = useMemo(
